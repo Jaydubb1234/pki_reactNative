@@ -1,39 +1,7 @@
-import React from 'react';
-import axios from 'axios';
-import console = require('console');
 
 class PostApi {
-    // static async getAllPosts () {
-    //     return await this.getPost()
-    //     .then(posts => {
-    //         axios.all(posts.map(async res => await this.getAuthor(res.author) 
-    //         ))
-    //         .then(axios.spread(function(...res){
-    //             //console.log(res);
-    //             for(let i = 0 ; i < posts.length; i++){
-    //                 posts[i].authorName = res[i].name;
-    //                 posts[i].avatar = Object.values(res[i].avatar_urls)[0];
-    //                 // posts[i].content.rendered = posts[i].content.rendered.replace('https://test', 'http://test');
-    //                 // console.log(posts[i].content.rendered);
-    //             }
-    //         }))
-    //         .catch(err => {
-    //             throw err;
-    //         });
-    //         console.log("first");
-    //         console.log(posts);
-    //         return posts;
-    //     })
-    //     .catch(err => {
-    //         throw err;
-    //     });
-    // }
 
-    static async getPost(userId, lastId?) {
-        return await this.getPostAndAuthor(userId, lastId)
-    }
-
-    static async getPostAndAuthor(currentUserId, lastId?){
+    static async getPost(currentUserId: number, lastId?: number){
         try{
             const res = await fetch('http://localhost:3002/api/v1/posts',{
                 method: 'POST',
@@ -45,51 +13,24 @@ class PostApi {
                     currentUserId,
                     lastId
                 })
-            }) //await fetch('http://localhost:3002/api/v1/posts/14') -GET //await fetch('http://test.poetsknowit.com/wp-json/wp/v2/posts') -GET
+            })
             const result = await res.json()
-            const promiseMap = result.data.map(async (res) => {
+            const promiseMap = result.data.map(async (res: any) => {
                 return await this.getPostAuthorAvatar(res.post_author)
             })
-            return Promise.all(promiseMap)
-                .then(vals => {
-                    vals.forEach( (val, i) => {
-                        result.data[i].avatar = val.avatar_urls[24]
-                    })
-                    return {res: result.data, err:false, lastPostId: result.data[result.data.length-1] ? result.data[result.data.length-1].id : null}
+            return Promise.all(promiseMap).then(vals => {
+                vals.forEach( (val: any, i: number) => {
+                    result.data[i].avatar = val.avatar_urls[24]
                 })
-
-            // return fetch('http://localhost:3002/api/v1/posts',{
-            //     method: 'POST',
-            //     headers: {
-            //         Accept: 'application/json',
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         currentUserId: '14',
-            //         lastId
-            //     })
-            // })
-            // .then(res => res.json())
-            // .then(result => {
-            //     const promiseMap = result.data.map(async (res) => {
-            //         return Promise.resolve(this.getPostAuthorAvatar(res.post_author))
-            //     })
-            //     return Promise.all(promiseMap)
-            //     .then(vals => {
-            //         vals.forEach( (val, i) => {
-            //             result.data[i].avatar = val.avatar_urls[24]
-            //         })
-            //         console.log('result.data ',result.data)
-            //         return {res: result.data, err:false}
-            //     })
-            // })
+                return {res: result.data, err:false, lastPostId: result.data[result.data.length-1] ? result.data[result.data.length-1].id : null}
+            })
         }
         catch(err){
             return {res: err, err:true}
         }
     }
 
-    static async getPostAuthorAvatar(authorId){
+    static async getPostAuthorAvatar(authorId: number){
         try{
            const res = await fetch('http://test.poetsknowit.com/wp-json/wp/v2/users/'+authorId)
            const result = res.json()

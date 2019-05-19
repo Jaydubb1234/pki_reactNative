@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { View, FlatList, ActivityIndicator} from 'react-native';
 import { ListItem } from 'react-native-elements'
 
@@ -9,13 +9,14 @@ export const renderHeader = (postData) => {
         data={postData}
         renderItem={(data) => (
           <ListItem
-            roundAvatar
-            avatar={{uri: data.item.avatar}}
-            containerStyle={{ borderBottomWidth: 0 }}
-            hideChevron={true}
+            // roundAvatar
+            // avatar={{uri: data.item.avatar}}
+            // containerStyle={{ borderBottomWidth: 0 }}
+            // hideChevron={true}
+            leftAvatar={{ source: { uri: data.item.avatar }, rounded:true }}
           />
         )}
-        keyExtractor={(data) => data.id}
+        keyExtractor={(data, ind) => ind.toString()/*data.id.toString()*/}
       />
     )
 }

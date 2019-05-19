@@ -1,11 +1,12 @@
 {
-  "compilerOptions": {
-    "target": "es2017",
-    "jsx": "react",
-    "noEmit": true,
-    "moduleResolution": "node",
-  },
-  "exclude": [
-    "node_modules",
-  ],
-}
+    "compilerOptions": {
+      "target": "es2017",
+      "jsx": "react",
+      "noEmit": true,
+      "moduleResolution": "node",
+    },
+    "exclude": [
+      "node_modules",
+    ],
+  }
+  

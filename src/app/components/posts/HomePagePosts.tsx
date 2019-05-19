@@ -1,100 +1,61 @@
-import React from 'react';
-import { Component } from 'react';
-import { Text, View, FlatList } from 'react-native';
-import { List } from 'react-native-elements'
-import PostCard from './PostCard';
-import PostApi from '../../api/postApi'
-import { renderFooter, renderHeader } from './HomePagePostRenders'
-import { styles, styleContainer } from './homePageStyles'
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ *
+ * @format
+ * @flow
+ */
+
+import * as React from 'react';
+import {Component} from 'react';
+import {Platform, StyleSheet, Text, View, FlatList} from 'react-native';
+//import PostApi from '../../api/postApi'
 import{ connect } from 'react-redux'
 import { fetchPosts, refreshPosts } from '../../actions/postsActions'
-import console = require('console');
-type Props = {};
-@connect( store => {
-    console.log('store ',store)
-    return {
-        posts: store.posts.posts,
-        lastPostId: store.posts.lastPostId,
-        isPostLoaded: store.posts.isPostLoaded,
-        refreshing: store.posts.refreshing,
-        error: store.posts.error
-    }
-})
-export default class HomePagePosts extends Component<Props> {
-  constructor(props) {
-    super(props)
-    this.state = {
-      postData: [],
-      usersData: [],
-      isLoaded: false,
-      loading:false,
-      lastId: null,
-      refreshing: false,
-      error: false
-    }
-  }
+import { renderFooter, renderHeader } from './HomePagePostRenders'
+import PostCard from './PostCard';
+import { styles, styleContainer } from './homePageStyles'
+//import PropTypes from 'prop-types'
 
-  componentDidMount(){
-    //this.makeRemoteRequest()
-    this.props.dispatch(fetchPosts('14', this.props.refreshing, null))
-  }
+const instructions = Platform.select({
+  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
+  android:
+    'Double tap R on your keyboard to reload,\n' +
+    'Shake or press menu button for dev menu',
+});
 
-  makeRemoteRequest = () => {
-    this.setState({loading: true})
-    Promise.resolve(PostApi.getPost(this.props.currentUserId,this.state.lastId))
-      .then( data => {
-        data.err ?
-          this.setState({
-            loading: false,
-            refreshing: false,
-            error: true,
-            isLoaded: true
-          }) 
-        :
-          this.setState({
-            postData: this.state.refreshing ? [...data.res, ...this.state.postData] : [...this.state.postData, ...data.res],
-            loading: false, 
-            refreshing: false,
-            isLoaded: true
-          })
-      }
-    )
+type Props = {
+  currentUserId: string
+  fetchPosts: any
+  refreshing: boolean
+  refreshPosts: any
+  lastPostId: number
+  isPostLoaded: boolean
+  error: any
+  posts: any []
+  loading:boolean
+  //posts: Array<{}>
+};
+//interface Props {};
+class HomePagePosts extends Component<Props> {
+  // constructor(props) {
+  //   super(props)
+  // }
+  componentDidMount = () => {
+    this.props.fetchPosts(this.props.currentUserId, this.props.refreshing, this.props.lastPostId)
   }
 
   handleRefresh = () => {
-    // this.setState({
-    //   refreshing: true,
-    //   lastId: null
-    // }, () => {
-    //   this.makeRemoteRequest()
-    // })
-    this.props.dispatch(refreshPosts('14', this.props.refreshing, null))
+    this.props.refreshPosts(this.props.currentUserId, this.props.refreshing, this.props.lastPostId)
   }
 
   handleLoadMore = () => {
-    // this.setState({
-    //   lastId: this.state.postData[this.state.postData.length-1].id
-    // }, () => {
-    //   this.makeRemoteRequest()
-    // })
-    this.props.dispatch(fetchPosts('14', this.props.refreshing, this.props.lastPostId))
+    this.props.fetchPosts(this.props.currentUserId, this.props.refreshing, this.props.lastPostId)
   }
 
-  render() {
-    //const {isLoaded, refreshing, error, postData} = this.state
-    const { posts, isPostLoaded, lastPostId, refreshing, error } = this.props
-    console.log('posts ',posts)
-    const postData = posts
-    //const pData = posts[posts.length-1]
-    // console.log('isPostLoaded ',isPostLoaded)
-
-    //pData ? postData.push(...pData) : null
-    console.log('postData ',postData)
-    // console.log('lastPostId ',lastPostId)
-    // console.log('posts.length ',posts.length)
-    // console.log('posts[0] ',posts[0])
-    // console.log('this.props ',this.props)
-      return (
+  render = () => {
+    const { posts, isPostLoaded, refreshing, error } = this.props
+    return (
       <View style={styles.container}>
         {
           !isPostLoaded ? 
@@ -102,23 +63,78 @@ export default class HomePagePosts extends Component<Props> {
 
             error ? 
             <Text style={{textAlign: 'center'}}>Sorry, Network Issues</Text> : 
-            <List containerStyle={styleContainer}>
+            //<List containerStyle={styleContainer}>
               <FlatList
-                  data={postData}
+                  data={posts}
                   renderItem={(post) => (
                     <PostCard post={post} />
                   )}
-                  keyExtractor={(post) => post.id}
-                  ListHeaderComponent={renderHeader(postData)}
-                  ListFooterComponent={renderFooter(this.state.loading)}
+                  keyExtractor={(post, ind) => ind.toString()/*post.id.toString()*/}
+                  ListHeaderComponent={renderHeader(posts)}
+                  ListFooterComponent={renderFooter(this.props.loading)}
                   refreshing={refreshing}
                   onRefresh={this.handleRefresh}
                   onEndReached={this.handleLoadMore}
                   onEndReachedThreshold={0}
               />
-          </List>
+          //</List>
         }
       </View>
     );
+    // return (
+    //   <View style={styles.container}>
+    //     <Text style={styles.welcome}>Welcome to React Native!</Text>
+    //     <Text style={styles.instructions}>To get started, edit App.js</Text>
+    //     <Text style={styles.instructions}>{instructions}</Text>
+    //   </View>
+    // );
   }
 }
+
+// HomePagePosts.propTypes = {
+//   fetchPosts: PropTypes.func.isRequired,
+//   posts: PropTypes.object.isRequired
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     backgroundColor: '#F5FCFF',
+//   },
+//   welcome: {
+//     fontSize: 20,
+//     textAlign: 'center',
+//     margin: 10,
+//   },
+//   instructions: {
+//     textAlign: 'center',
+//     color: '#333333',
+//     marginBottom: 5,
+//   },
+// });
+
+const mapStateToProps = state => {
+  const {posts, error, refreshing, lastPostId, isPostLoaded, loading} = state.postReducer
+  return {
+    posts,
+    error,
+    refreshing,
+    lastPostId,
+    isPostLoaded,
+    loading
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+ return {
+  fetchPosts: (currentUserId, refreshing, lastPostId) => dispatch(fetchPosts(currentUserId, refreshing, lastPostId)),
+  refreshPosts: (currentUserId, refreshing, lastPostId) => dispatch(refreshPosts(currentUserId, refreshing, lastPostId))
+  //fetchPosts: () => dispatch(fetchPosts('14', false, null))
+  //fetchPosts: () => fetchPosts('14', false, null)
+ }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomePagePosts) //*
+//export default connect(mapStateToProps)(HomePagePosts) //*

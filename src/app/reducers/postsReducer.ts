@@ -1,28 +1,52 @@
-import console = require("console");
+//import console = require("console");
 
-export default function reducer(state={
+const initialState = {
     posts:[],
     fetching: false,
     fetched:false,
-    error:null,
+    error:false,
     refreshing:false,
     lastPostId:null,
-    isPostLoaded: false
-}, action){
+    isPostLoaded: false,
+    loading: false
+}
+
+const postReducer = (state=initialState, action) => {
     switch(action.type){
-        case 'FETCH_POSTS': {
+        case 'FETCH_POSTS_STARTED': {
             return {
                 ...state, 
-                fetching:true
+                fetching:true,
+                loading: true 
             }
         }
-        case 'FETCH_POSTS_COMPLETE': {
+        case 'FETCH_POSTS_COMPLETED': {
             return {
                 ...state, 
                 posts: action.refreshing ? mapRefresh(action.payload, state.posts)/*[...action.payload, ...state.posts]*/ : mapRefresh(state.posts, action.payload)/*[...state.posts, ...action.payload]*/,
                 isPostLoaded: true,
                 refreshing:false,
-                lastPostId: action.lastPostId
+                lastPostId: action.lastPostId,
+                loading: false
+            }
+        }
+        case 'FETCH_POSTS_ERROR': {
+            return{
+                ...state,
+                //error:[...state.posts, action.payload]
+                error: action.error,
+                loading: false
+
+            }
+        }
+        case 'REFETCH_POSTS_COMPLETE':{
+            return{
+                ...state,
+                posts: mapRefresh(action.payload, state.posts),//[...new Set([...action.payload, ...state.posts])],
+                //refreshing: true,
+                refreshing: false,
+                loading: false,
+                lastPostId: null
             }
         }
         case 'ADD_POST': {
@@ -31,22 +55,9 @@ export default function reducer(state={
                 posts:[...state.posts, action.payload]
             }
         }
-        case 'FETCH_POSTS_ERROR': {
-            return{
-                ...state,
-                error:[...state.posts, action.payload]
-            }
-        }
-        case 'REFETCH_POSTS_COMPLETE':{
-            return{
-                ...state,
-                posts: mapRefresh(action.payload, state.posts),//[...new Set([...action.payload, ...state.posts])],
-                refreshing: true,
-                lastPostId: null
-            }
-        }
+        default: 
+            return state
     }
-    return state
 }
 
 function mapRefresh(curr, old){
@@ -61,3 +72,5 @@ function mapRefresh(curr, old){
     })
     return [...data,...old]
 }
+
+export default postReducer
